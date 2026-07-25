@@ -1,0 +1,5 @@
+Flask
+Pillow
+openai
+stockfish
+cryptography
