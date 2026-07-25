@@ -3,3 +3,4 @@ Pillow
 openai
 stockfish
 cryptography
+pyopenssl
