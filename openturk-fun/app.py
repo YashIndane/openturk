@@ -21,7 +21,7 @@ import os
 import argparse
 from src.board_to_dict import generate_state_dictionary
 from src.dict_to_fen import board_to_fen
-from src.move_generation import gen_move
+from src.mov_o import gen_move
 from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
@@ -65,6 +65,8 @@ def analyse():
     #Invoke StockFish for optimal move
     move = gen_move(fen_string, depth)
 
+    print(move)
+
     return render_template("board.html", placement_dictionary=board, best_move=move)
 
 
@@ -87,4 +89,4 @@ if __name__ == "__main__":
     # Your browser will show an "unsafe site" warning once — that's
     # expected for a self-signed cert, just proceed past it.
     parseargs()
-    app.run(host="0.0.0.0", port=5000, debug=True, ssl_context="adhoc")
+    app.run(host="0.0.0.0", port=5000, debug=True, ssl_context="adhoc", use_reloader=False)
