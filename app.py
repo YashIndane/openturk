@@ -19,7 +19,7 @@ LAN will NOT get camera access.
 
 import os
 import argparse
-from src.board_to_dict import generate_state_dictionary
+from src.board_to_dict6 import generate_state_dictionary
 from src.dict_to_fen import board_to_fen
 from src.mov_o import gen_move
 from flask import Flask, jsonify, render_template, request
