@@ -15,7 +15,7 @@ def _get_engine() -> Stockfish:
     if _engine is None:
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         _engine = Stockfish(path=os.path.join(BASE_DIR, "..", "exe", "stockfish", "stockfish"))
-        _engine.update_engine_parameters({"Threads": 2, "Hash": 16})
+        _engine.update_engine_parameters({"Threads": 2, "Hash": 128})
     return _engine
 
 
@@ -59,7 +59,7 @@ def gen_move(fen: str, strength: int) -> dict:
                 _current_depth = strength
 
             engine.set_fen_position(fen)
-            best_move = engine.get_best_move_time(5000)
+            best_move = engine.get_best_move_time(6000)
 
             if best_move is None:
                 # Engine responded but found nothing (e.g. mate/stalemate) —
