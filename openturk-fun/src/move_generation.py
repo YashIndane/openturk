@@ -1,4 +1,5 @@
 from stockfish import Stockfish
+import chess
 import threading
 import atexit
 import os
@@ -14,16 +15,23 @@ def _get_engine() -> Stockfish:
     if _engine is None:
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         _engine = Stockfish(path=os.path.join(BASE_DIR, "..", "exe", "stockfish", "stockfish"))
-        #_engine.update_engine_parameters({"Threads": 2, "Hash": 16})
+        #_engine.update_engine_parameters({"Threads": 2, "Hash": 128})
     return _engine
 
 
-def gen_move(fen: str, strength: int) -> str:
-    """Calculates the best chess move using a persistent Stockfish engine.
+def gen_move(fen: str, strength: int) -> dict:
+    """Calculates the best chess move using a persistent Stockfish engine,
+    and reports whether that move puts the opponent in check, checkmate,
+    or stalemate.
 
     Reuses a single long-lived engine process instead of spawning a new
     one per call, to avoid repeated startup cost and memory pressure on
     low-RAM devices like the Pi Zero 2W.
+
+    Stockfish itself is only used to pick the move; check/checkmate/
+    stalemate detection is done with python-chess's rules engine (no
+    extra engine process needed) by replaying the chosen move on a
+    local board.
 
     Args:
         fen (str): The piece-placement field or partial FEN string
@@ -31,7 +39,14 @@ def gen_move(fen: str, strength: int) -> str:
         strength (int): The search depth level to configure the Stockfish engine.
 
     Returns:
-        str: The best calculated move in standard UCI notation (e.g., 'e2e4').
+        dict | None: None if the input position already has no legal
+            moves (e.g. the game was already over before this call).
+            Otherwise a dict:
+                {
+                    "move": str,      # best move in UCI notation, e.g. "e2e4"
+                    "status": str,    # "normal" | "check" | "checkmate" | "stalemate"
+                    "new_fen": str,   # resulting FEN after the move
+                }
     """
     global _current_depth, _engine
 
@@ -51,14 +66,33 @@ def gen_move(fen: str, strength: int) -> str:
                 # not a crash, just no move to make.
                 return None
 
-            return best_move
-
         except Exception:
             # If the underlying process died (crash, OOM-kill, etc.),
             # drop the reference so the next call spins up a fresh one
             # instead of repeatedly hitting a dead process.
             _engine = None
             raise
+
+    # Rules-based status check happens outside the engine lock — it only
+    # touches python-chess's local board, not the Stockfish process, so
+    # there's no need to hold the lock while doing it.
+    board = chess.Board(fen)
+    board.push_uci(best_move)
+
+    if board.is_checkmate():
+        status = "checkmate"
+    elif board.is_check():
+        status = "check"
+    elif board.is_stalemate():
+        status = "stalemate"
+    else:
+        status = "normal"
+
+    return {
+        "move": best_move,
+        "status": status,
+        "new_fen": board.fen(),
+    }
 
 
 def shutdown_engine():
