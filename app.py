@@ -63,11 +63,11 @@ def analyse():
     print(fen_string)
 
     #Invoke StockFish for optimal move
-    move = gen_move(fen_string, depth)
+    engine_move = gen_move(fen_string, depth)
 
-    print(move)
+    print(f"\nMove: {engine_move['move']}", f"Status: {engine_move['status']}", f"New FEN: {engine_move['new_fen']}\n", sep="\n")
 
-    return render_template("board.html", placement_dictionary=board, best_move=move)
+    return render_template("board.html", placement_dictionary=board, best_move=engine_move['move'])
 
 
 def parseargs() -> None:
