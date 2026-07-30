@@ -1,7 +1,0 @@
-Flask
-Pillow
-openai
-stockfish
-python-chess
-cryptography
-pyopenssl
