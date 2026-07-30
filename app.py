@@ -14,7 +14,7 @@ computer). HTTPS (or localhost) is required for getUserMedia and the
 torch/flashlight API to work on a real device — plain http:// over
 LAN will NOT get camera access.
 
-(NOTE - This App is configured to play as `WHITE` Piece)
+(NOTE - This App is configured to play as `BLACK` Piece)
 """
 
 import os
