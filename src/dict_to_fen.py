@@ -1,4 +1,4 @@
-def board_to_fen(board, active_color='w', castling='-',
+def board_to_fen(board, active_color='b', castling='-',
                   en_passant='-', halfmove_clock=0, fullmove_number=1):
     """
     Convert a chess board dict to a FEN string.
