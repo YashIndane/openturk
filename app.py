@@ -67,7 +67,7 @@ def analyse():
 
     print(f"\nMove: {engine_move['move']}", f"Status: {engine_move['status']}", f"New FEN: {engine_move['new_fen']}\n", sep="\n")
 
-    return render_template("board.html", placement_dictionary=board, best_move=engine_move['move'])
+    return render_template("board.html", placement_dictionary=board, best_move=engine_move['move'], status=engine_move['status'])
 
 
 def parseargs() -> None:
