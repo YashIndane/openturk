@@ -79,6 +79,12 @@
   }
   .sq:hover .piece-img{ transform: translateY(-2px) scale(1.04); }
 
+  .info-row{
+    display:flex;
+    align-items:center;
+    gap: 28px;
+  }
+
   .best-move{
     font-size: 13px;
     letter-spacing: 0.05em;
@@ -141,8 +147,15 @@
       </div>
     </div>
 
-    {% if best_move %}
-    <div class="best-move">Best move: <span>{{ best_move }}</span></div>
+    {% if best_move or status %}
+    <div class="info-row">
+      {% if best_move %}
+      <div class="best-move">Best move: <span>{{ best_move }}</span></div>
+      {% endif %}
+      {% if status %}
+      <div class="best-move">Status: <span>{{ status }}</span></div>
+      {% endif %}
+    </div>
     {% endif %}
   </div>
 </body>
