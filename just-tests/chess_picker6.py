@@ -132,7 +132,7 @@ X_DROP_POSITION_MM = (
 # ---------------------------------------------------------------------------
 
 RANK_SIGN = 1   # flip to -1 if a +1 rank-axis test move goes toward rank1 instead of rank8
-FILE_SIGN = 1   # flip to -1 if a +1 file-axis test move goes toward file A instead of file H
+FILE_SIGN = -1   # flip to -1 if a +1 file-axis test move goes toward file A instead of file H
 
 
 # ---------------------------------------------------------------------------
