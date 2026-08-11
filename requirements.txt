@@ -5,3 +5,4 @@ stockfish
 python-chess
 cryptography
 pyopenssl
+requests

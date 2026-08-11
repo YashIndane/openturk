@@ -18,10 +18,11 @@ LAN will NOT get camera access.
 """
 
 import os
+import requests
 import argparse
 from src.board_to_dict import generate_state_dictionary
 from src.dict_to_fen import board_to_fen
-from src.move_generation import gen_move
+from src.move_generation2 import gen_move
 from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
@@ -37,6 +38,7 @@ def index():
 
 @app.route("/analyse", methods=["POST"])
 def analyse():
+    global capture_flag, move
     image = request.files.get("image")
     perspective = request.form.get("perspective", "white")
     depth = request.form.get("depth", "1")
@@ -65,22 +67,53 @@ def analyse():
     #Invoke StockFish for optimal move
     engine_move = gen_move(fen_string, depth)
 
-    print(f"\nMove: {engine_move['move']}", f"Status: {engine_move['status']}", f"New FEN: {engine_move['new_fen']}\n", sep="\n")
+    print(f"\nMove: {engine_move['move']}",
+          f"Status: {engine_move['status']}",
+          f"New FEN: {engine_move['new_fen']}\n",
+          sep="\n",
+    )
 
-    return render_template("board.html", placement_dictionary=board, best_move=engine_move['move'], status=engine_move['status'])
+    capture_flag = engine_move['capture']
+    move = engine_move['move']
+    return render_template("board2.html", placement_dictionary=board, best_move=engine_move['move'], status=engine_move['status'])
+
+
+@app.route('/callpicker', methods=['GET'])
+def callpicker():
+    try:
+       cap = 'yes' if capture_flag else 'no'
+       resp = requests.get(
+           f'http://{picker_ip}:5000/drivepicker',
+           params={'move':move, 'capture':cap},
+           timeout=(15, 70),    #(connect_timeout, read_timeout)
+       )
+       resp.raise_for_status()
+       return jsonify(resp.json()), resp.status_code
+
+    except requests.exceptions.Timeout:
+         return jsonify({'status':'error', 'message':'Drivepicker did not respond in time'}), 504
+    except requests.exceptions.ConnectionError:
+         return jsonify({'status':'error', 'message':'Could not reach picker'}), 502
+    except requests.exceptions.HTTPError:
+         return jsonify({'status':'error', 'message':f'Drivepicker returned {resp.status_code}:{resp.text}'}), 502
+    except requests.exceptions.RequestException as e:
+         return jsonify({'status':'error', 'message':str(e)}), 500
 
 
 def parseargs() -> None:
     """Parse command line arguments"""
     global apikey
+    global picker_ip
 
     parser = argparse.ArgumentParser(
-        add_help="Argument parser for Plate-fetcher"
+        add_help="Argument parser for Openturk"
     )
 
     parser.add_argument('--apikey', help="OpenAI API Key", required=True)
+    parser.add_argument('--pickerip', help="Picker IPV4", required=True)
     args = parser.parse_args()
     apikey = args.apikey
+    picker_ip = args.pickerip
 
 
 if __name__ == "__main__":
@@ -89,4 +122,4 @@ if __name__ == "__main__":
     # Your browser will show an "unsafe site" warning once — that's
     # expected for a self-signed cert, just proceed past it.
     parseargs()
-    app.run(host="0.0.0.0", port=5000, debug=True, ssl_context="adhoc", use_reloader=False)
+    app.run(host="0.0.0.0", port=5000, debug=True, ssl_context="adhoc", use_reloader=False, threaded=True)
