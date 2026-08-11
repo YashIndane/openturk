@@ -34,9 +34,12 @@ Notes:
 
 ## Rpi
 ```
-Add gpio=4=ip,pd at the EOF in /boot/firmware/config.txt
+1. Add gpio=4=ip,pd at the EOF in /boot/firmware/config.txt
 
-Installing pigpio and running it's daemon:
+2. Run `iwconfig` — if `Power Management:on`, the Pi's WiFi radio may be sleeping between requests.
+Disable with `sudo iw wlan0 set power_save off`.
+
+3. Installing pigpio and running it's daemon:
     $ sudo apt update
     $ sudo apt install -y python3-setuptools python3-full git
     $ sudo wget https://github.com/joan2937/pigpio/archive/refs/tags/v79.tar.gz
