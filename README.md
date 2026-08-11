@@ -1,6 +1,6 @@
 ## Usage
 ```
-$ sudo python3 app.py --apikey="<OPENAI-API-KEY>" 
+$ sudo python3 app.py --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PICKER>"
 ```
 
 ## Prerequisites
