@@ -75,7 +75,7 @@ def analyse():
 
     capture_flag = engine_move['capture']
     move = engine_move['move']
-    return render_template("board2.html", placement_dictionary=board, best_move=engine_move['move'], status=engine_move['status'])
+    return render_template("board3.html", placement_dictionary=board, best_move=engine_move['move'], status=engine_move['status'])
 
 
 @app.route('/callpicker', methods=['GET'])
