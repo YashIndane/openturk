@@ -1,6 +1,11 @@
 ## Usage
 ```
-$ sudo python3 app.py --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PICKER>"
+Starting the main app:
+    $ sudo python3 app.py --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PICKER>"
+
+Starting the API on Rpi:
+    $ cd picker-api
+    $ sudo python3 app.py
 ```
 
 ## Prerequisites
