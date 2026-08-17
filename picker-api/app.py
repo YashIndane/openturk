@@ -7,7 +7,7 @@ Disable with `sudo iw wlan0 set power_save off`.
 
 from flask import Flask, jsonify, request
 from werkzeug.serving import WSGIRequestHandler
-from chess_picker import move_picker, shutdown
+from chess_picker2 import move_picker, shutdown
 
 app = Flask(__name__)
 
