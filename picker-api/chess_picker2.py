@@ -68,8 +68,10 @@ import sys
 import argparse
 import atexit
 import pigpio
+import zaxis
 
 from gripper import Servo
+
 
 # ---------------------------------------------------------------------------
 # Hardware config (mirrors xy_stepper_driver3.py)
@@ -543,35 +545,59 @@ def move_picker(coor, capture=False,
 
     if not capture:
         go(PARK_SQUARE, src)                        # move
-        time.sleep(2)                                            # gripper down
-        servo_gripper.move_to(123)                  # grab the piece
-        time.sleep(2)                                            # gripper up
+        zaxis.drop()                                # gripper down
+        zaxis.stopm()
+        time.sleep(.3)
+        servo_gripper.move_to(133)                  # grab the piece
+        zaxis.lift()                                # gripper up
+        zaxis.stopm()
+        time.sleep(.3)
         go(src, dst)                                # move
-        time.sleep(2)                                            # gripper down
+        zaxis.drop()                                # gripper down
+        zaxis.stopm()
+        time.sleep(.3)
         servo_gripper.release()                     # release hold
-        servo_gripper.move_without_hold(100)        # release piece
-        time.sleep(2)                                            # gripper up
+        servo_gripper.move_without_hold(98)         # release piece
+        zaxis.lift()                                # gripper up
+        zaxis.stopm()
+        time.sleep(.3)
         go(dst, PARK_SQUARE)                        # move
 
     else:
         go(PARK_SQUARE, dst)                        # move
-        time.sleep(2)                                            # gripper down
-        servo_gripper.move_to(123)                  # grab the piece
-        time.sleep(2)                                            # gripper up
+        zaxis.drop()                                            # gripper down
+        zaxis.stopm()
+        time.sleep(.3)
+        servo_gripper.move_to(133)                  # grab the piece
+        zaxis.lift()                                            # gripper up
+        zaxis.stopm()
+        time.sleep(.3)
         go(dst, 'X')                                # move
-        time.sleep(2)                                            # gripper down
+        zaxis.drop()                                             # gripper down
+        zaxis.stopm()
+        time.sleep(.3)
         servo_gripper.release()                     # release hold
-        servo_gripper.move_without_hold(100)        # release piece
-        time.sleep(2)                                            # gripper up
+        servo_gripper.move_without_hold(98)        # release piece
+        zaxis.lift()                               # gripper up
+        zaxis.stopm()
+        time.sleep(.3)
         go('X', src)                                # move
-        time.sleep(2)                                            # gripper down
-        servo_gripper.move_to(123)                  # grab the piece
-        time.sleep(2)                                            # gripper up
+        zaxis.drop()                                # gripper down
+        zaxis.stopm()
+        time.sleep(.3)
+        servo_gripper.move_to(133)                  # grab the piece
+        zaxis.lift()                                            # gripper up
+        zaxis.stopm()
+        time.sleep(.3)
         go(src, dst)                                # move
-        time.sleep(2)                                            # gripper down
+        zaxis.drop()                                            # gripper down
+        zaxis.stopm()
+        time.sleep(.3)
         servo_gripper.release()                     # release hold
-        servo_gripper.move_without_hold(100)        # release piece
-        time.sleep(2)                                            # gripper up
+        servo_gripper.move_without_hold(98)        # release piece
+        zaxis.lift()                               # gripper up
+        zaxis.stopm()
+        time.sleep(.3)
         go(dst, PARK_SQUARE)                        # move
 
 
