@@ -1,7 +1,11 @@
 ## Usage
 ```
-Starting the main app:
-    $ sudo python3 app.py --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PICKER>"
+Starting the main app on WSL:
+    $ sudo python3 app.py --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PICKER-10.x.x.x>"
+
+Network config (Powershell Admin):
+    $ netsh interface portproxy add v4tov4 listenport=5000 listenaddress=0.0.0.0 connectport=5000 connectaddress=1<IPV4-OF-WSL-172.x.x.x>
+    $ New-NetFirewallRule -DisplayName "Flask Hotspot 5000" -Direction Inbound -LocalPort 5000 -Protocol TCP -Action Allow
 
 Starting the API on Rpi:
     $ cd picker-api
