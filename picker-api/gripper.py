@@ -55,7 +55,7 @@ class Servo:
         self.current_angle = requested
         return requested
 
-    def move_without_hold(self, angle, settle_time=0.3):
+    def move_without_hold(self, angle, settle_time=1):
         """Move to angle, wait for it to arrive, then release (no holding torque)."""
         actual = self.move_to(angle)
         time.sleep(settle_time)

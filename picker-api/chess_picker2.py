@@ -548,7 +548,7 @@ def move_picker(coor, capture=False,
         zaxis.drop()                                # gripper down
         zaxis.stopm()
         time.sleep(.3)
-        servo_gripper.move_to(133)                  # grab the piece
+        servo_gripper.move_to(115)                  # grab the piece
         zaxis.lift()                                # gripper up
         zaxis.stopm()
         time.sleep(.3)
@@ -557,7 +557,7 @@ def move_picker(coor, capture=False,
         zaxis.stopm()
         time.sleep(.3)
         servo_gripper.release()                     # release hold
-        servo_gripper.move_without_hold(87)         # release piece
+        servo_gripper.move_without_hold(80)         # release piece
         zaxis.lift()                                # gripper up
         zaxis.stopm()
         time.sleep(.3)
@@ -568,7 +568,7 @@ def move_picker(coor, capture=False,
         zaxis.drop()                                            # gripper down
         zaxis.stopm()
         time.sleep(.3)
-        servo_gripper.move_to(133)                  # grab the piece
+        servo_gripper.move_to(115)                  # grab the piece
         zaxis.lift()                                            # gripper up
         zaxis.stopm()
         time.sleep(.3)
@@ -577,7 +577,7 @@ def move_picker(coor, capture=False,
         zaxis.stopm()
         time.sleep(.3)
         servo_gripper.release()                     # release hold
-        servo_gripper.move_without_hold(87)        # release piece
+        servo_gripper.move_without_hold(80)        # release piece
         zaxis.lift()                               # gripper up
         zaxis.stopm()
         time.sleep(.3)
@@ -585,7 +585,7 @@ def move_picker(coor, capture=False,
         zaxis.drop()                                # gripper down
         zaxis.stopm()
         time.sleep(.3)
-        servo_gripper.move_to(133)                  # grab the piece
+        servo_gripper.move_to(115)                  # grab the piece
         zaxis.lift()                                            # gripper up
         zaxis.stopm()
         time.sleep(.3)
@@ -594,7 +594,7 @@ def move_picker(coor, capture=False,
         zaxis.stopm()
         time.sleep(.3)
         servo_gripper.release()                     # release hold
-        servo_gripper.move_without_hold(87)        # release piece
+        servo_gripper.move_without_hold(80)        # release piece
         zaxis.lift()                               # gripper up
         zaxis.stopm()
         time.sleep(.3)
