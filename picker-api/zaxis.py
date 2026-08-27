@@ -18,7 +18,7 @@ def lift():
     print("Turning motor forward")
     GPIO.output(PIN_IN1, GPIO.HIGH)
     GPIO.output(PIN_IN2, GPIO.LOW)
-    sleep(BASE-0.15)
+    sleep(BASE-0.30)
 
 def stopm():
     print("Stopping motor")
@@ -30,7 +30,7 @@ def drop():
     print("Turning motor backward")
     GPIO.output(PIN_IN1, GPIO.LOW)
     GPIO.output(PIN_IN2, GPIO.HIGH)
-    sleep(BASE+0.15)
+    sleep(BASE+0.25)
 
 def clean():
     print("Cleaning up GPIO resources")
