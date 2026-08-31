@@ -21,9 +21,16 @@ Starting the API on Rpi:
 
 ## Prerequisites
 ```
-$ sudo pip3 install -r requirements.txt
+WSL:
 
-Rpi -
+1. Copy the Stockfish binary to /exe/stockfish
+
+2. Give proper permissions (777) to the binary, stockfish folder & exe folder 
+
+3. Installing modules:
+    $ sudo pip3 install -r requirements.txt
+
+Rpi:
 
 1. Add gpio=4=ip,pd at the EOF in /boot/firmware/config.txt
 
