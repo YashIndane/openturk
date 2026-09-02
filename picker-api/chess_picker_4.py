@@ -68,7 +68,7 @@ import sys
 import argparse
 import atexit
 import pigpio
-import zaxis
+import zaxis_control
 
 from gripper import Servo
 
@@ -106,7 +106,7 @@ HOLD_DELAY_S = 0.3   # pause after every move leg, per the requested sequence
 # Board / picker geometry -- EDIT FOR YOUR BUILD
 # ---------------------------------------------------------------------------
 
-SQUARE_SIZE_MM = 37.0   # adjustable board square pitch
+SQUARE_SIZE_MM = 40.0   # adjustable board square pitch
 
 ORIGIN_FILE_IDX = 4    # 'd' -- park square file
 ORIGIN_RANK_IDX = 10   # park square rank (one row further out than the board edge)
@@ -545,52 +545,52 @@ def move_picker(coor, capture=False,
 
     if not capture:
         go(PARK_SQUARE, src)                        # move
-        zaxis.drop()                                # gripper down
-        zaxis.stopm()
+        zaxis_control.drop()                                # gripper down
+        zaxis_control.stopm()
         time.sleep(.3)
         servo_gripper.move_to(115)                  # grab the piece
-        zaxis.lift()                                # gripper up
-        zaxis.stopm()
+        zaxis_control.lift()                                # gripper up
+        zaxis_control.stopm()
         time.sleep(.3)
         go(src, dst)                                # move
-        zaxis.drop()                                # gripper down
-        zaxis.stopm()
+        zaxis_control.drop()                                # gripper down
+        zaxis_control.stopm()
         time.sleep(.3)
         servo_gripper.release()                     # release hold
         servo_gripper.move_without_hold(80)         # release piece
-        zaxis.lift()                                # gripper up
-        zaxis.stopm()
+        zaxis_control.lift()                                # gripper up
+        zaxis_control.stopm()
         time.sleep(.3)
         go(dst, PARK_SQUARE)                        # move
 
     else:
         go(PARK_SQUARE, dst)                        # move
-        zaxis.drop()                                            # gripper down
-        zaxis.stopm()
+        zaxis_control.drop()                                            # gripper down
+        zaxis_control.stopm()
         time.sleep(.3)
         servo_gripper.move_to(115)                  # grab the piece
-        zaxis.lift()                                            # gripper up
-        zaxis.stopm()
+        zaxis_control.lift()                                            # gripper up
+        zaxis_control.stopm()
         time.sleep(.3)
         go(dst, PARK_SQUARE)                                # move
         servo_gripper.release()                     # release hold
         servo_gripper.move_without_hold(80)        # release piece
         go(PARK_SQUARE, src)                                # move
-        zaxis.drop()                                # gripper down
-        zaxis.stopm()
+        zaxis_control.drop()                                # gripper down
+        zaxis_control.stopm()
         time.sleep(.3)
         servo_gripper.move_to(115)                  # grab the piece
-        zaxis.lift()                                            # gripper up
-        zaxis.stopm()
+        zaxis_control.lift()                                            # gripper up
+        zaxis_control.stopm()
         time.sleep(.3)
         go(src, dst)                                # move
-        zaxis.drop()                                            # gripper down
-        zaxis.stopm()
+        zaxis_control.drop()                                            # gripper down
+        zaxis_control.stopm()
         time.sleep(.3)
         servo_gripper.release()                     # release hold
         servo_gripper.move_without_hold(80)        # release piece
-        zaxis.lift()                               # gripper up
-        zaxis.stopm()
+        zaxis_control.lift()                               # gripper up
+        zaxis_control.stopm()
         time.sleep(.3)
         go(dst, PARK_SQUARE)                        # move
 
