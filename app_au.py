@@ -116,12 +116,14 @@ def analyse():
     move = engine_move['move']
 
     # Drive picker
-    callpicker()
+    resp, status_code = callpicker()
+
+    if status_code != 200:
+        return resp, status_code  # Halt on error instead of rendering the capture page
 
     # Wait for vibrations to settle down
     time.sleep(5)
 
-    # Hand the phone the capture page back so it's ready for the next move.
     return render_template("capture_board_au8.html")
 
 
@@ -132,7 +134,7 @@ def callpicker():
        resp = requests.get(
            f'http://{picker_ip}:5000/drivepicker',
            params={'move':move, 'capture':cap},
-           timeout=(15, 70),    #(connect_timeout, read_timeout)
+           timeout=(15, 240),    #(connect_timeout, read_timeout)
        )
        resp.raise_for_status()
        return jsonify(resp.json()), resp.status_code
