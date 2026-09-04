@@ -119,7 +119,7 @@ def analyse():
     callpicker()
 
     # Wait for vibrations to settle down
-    time.sleep(3)
+    time.sleep(5)
 
     # Hand the phone the capture page back so it's ready for the next move.
     return render_template("capture_board_au8.html")
