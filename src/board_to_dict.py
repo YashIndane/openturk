@@ -1,4 +1,5 @@
 import base64
+import os
 import json
 from io import BytesIO
 from PIL import Image
@@ -31,7 +32,8 @@ def encode_image(image_path, max_dimension=1500, crop_box=None):
 
 
 # ---- Config ----
-image_path = "uploads/last_capture.png"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+image_path = os.path.join(BASE_DIR, "uploads", "last_capture.png")
 
 # Crop box tuned for this camera setup: (left, top, right, bottom) in pixels.
 # Adjust once by eye so it hugs the 8x8 grid without clipping squares.
@@ -201,7 +203,7 @@ Rules:
 """
 
 
-def generate_state_dictionary(*, openai_api_key: str) -> dict:
+def generate_state_dictionary(*, openai_api_key: str) -> tuple[int, dict]:
     client = OpenAI(api_key=openai_api_key)
     base64_image = encode_image(image_path, max_dimension=1500, crop_box=crop_box)
     response = client.chat.completions.create(
@@ -254,4 +256,4 @@ def generate_state_dictionary(*, openai_api_key: str) -> dict:
     if uncertain_notes:
         print("\nUncertain squares:", uncertain_notes)
 
-    return board_dict
+    return (response.usage.completion_tokens, board_dict)

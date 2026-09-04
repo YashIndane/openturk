@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>OpenTurk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0C0C0E;
+    --surface:  #141416;
+    --border:   #2A2A30;
+    --gold:     #C8A84B;
+    --gold-dim: #8A7030;
+    --text:     #F0EBE0;
+    --muted:    #7A7870;
+    --white-sq: #E8D5B0;
+    --black-sq: #2E2418;
+  }
+
+  /* ── Page shell ── */
+  html {
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    height: 100dvh;
+    overflow: hidden;
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── Header ── */
+  .header {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px 9px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-icon  { font-size: 20px; line-height: 1; }
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .header-sub {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  /* ── Viewfinder ── */
+  .viewfinder-outer {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    padding: 8px 16px 0;
+  }
+  .viewfinder-wrap {
+    position: relative;
+    width:  var(--vf-size, 300px);
+    height: var(--vf-size, 300px);
+    border-radius: 4px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  #video, #preview {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #preview { display: none; position: absolute; inset: 0; }
+
+  /* Corner bracket markers */
+  .corner { position: absolute; width: 20px; height: 20px; z-index: 10; }
+  .corner::before, .corner::after { content: ''; position: absolute; background: var(--gold); }
+  .corner::before { width: 2px; height: 100%; }
+  .corner::after  { width: 100%; height: 2px; }
+  .corner.tl { top: 10px; left: 10px; }
+  .corner.tr { top: 10px; right: 10px; transform: scaleX(-1); }
+  .corner.bl { bottom: 10px; left: 10px;  transform: scaleY(-1); }
+  .corner.br { bottom: 10px; right: 10px; transform: scale(-1); }
+
+  /* Flash */
+  .flash {
+    position: absolute; inset: 0;
+    background: #fff; opacity: 0;
+    pointer-events: none; z-index: 20;
+    transition: opacity 0s;
+  }
+  .flash.go { opacity: 0.8; transition: opacity 0.3s ease-out; }
+
+  /* Captured badge */
+  .captured-badge {
+    position: absolute; top: 8px; left: 10px;
+    background: var(--gold); color: #000;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 2px;
+    display: none; z-index: 15;
+  }
+
+  .debug-overlay {
+    position: absolute; bottom: 6px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.6);
+    color: #9ee6a8;
+    font-family: monospace;
+    font-size: 10px;
+    padding: 2px 8px; border-radius: 3px;
+    display: none; z-index: 15;
+    white-space: nowrap;
+  }
+
+  .cam-error {
+    position: absolute; inset: 0;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px; background: #0a0a0a;
+    color: var(--muted); font-size: 13px;
+    text-align: center; padding: 20px;
+  }
+  .cam-error-icon { font-size: 30px; }
+
+  .zoom-controls {
+    position: absolute; right: 8px; top: 50%;
+    transform: translateY(-50%);
+    display: flex; flex-direction: column;
+    align-items: center; gap: 4px; z-index: 12;
+  }
+  .zoom-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(200,168,75,0.45);
+    color: var(--gold); font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .zoom-btn:active { background: rgba(200,168,75,0.28); }
+  .zoom-level {
+    font-size: 10px; font-weight: 700;
+    color: var(--gold);
+    text-shadow: 0 1px 4px #000;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Actions ── */
+  .action-row {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 8px 16px 6px;
+  }
+
+  #snapBtn {
+    display: flex; align-items: center; justify-content: center;
+    gap: 7px; height: 44px; padding: 0 28px;
+    background: var(--gold); border: none; border-radius: 3px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase; color: #0C0C0E;
+    cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #snapBtn:active { opacity: 0.82; transform: scale(0.96); }
+
+  /* ── Controls card ── */
+  .controls {
+    flex: 0 0 auto;
+    margin: 0 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ctrl-label {
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 5px;
+  }
+
+  .perspective-row { display: flex; gap: 10px; }
+  .persp-option {
+    flex: 1; display: flex; align-items: center;
+    gap: 8px; padding: 7px 10px;
+    border: 1px solid var(--border); border-radius: 3px;
+    cursor: pointer; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .persp-option.active { border-color: var(--gold); background: rgba(200,168,75,0.07); }
+  .persp-piece {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .persp-piece.wp { background: var(--white-sq); color: #1a1a1a; border: 1.5px solid #c0a870; }
+  .persp-piece.bp { background: var(--black-sq); color: #e8d5b0; border: 1.5px solid #5a4a2a; }
+  .persp-text { font-size: 13px; font-weight: 500; }
+  .persp-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--gold); margin-left: auto;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .persp-option.active .persp-dot { opacity: 1; }
+
+  /* Depth slider */
+  .depth-row { display: flex; align-items: center; gap: 10px; }
+  .depth-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 500;
+    color: var(--gold); min-width: 38px; text-align: right; line-height: 1;
+  }
+  input[type=range] {
+    -webkit-appearance: none; appearance: none; flex: 1; height: 3px;
+    border-radius: 2px; background: var(--border); outline: none; cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--bg);
+    box-shadow: 0 0 8px rgba(200,168,75,0.4); cursor: pointer;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--bg); cursor: pointer;
+  }
+  .depth-minmax { display: flex; justify-content: space-between; margin-top: 3px; }
+  .depth-minmax span { font-size: 9px; color: var(--muted); }
+
+  /* ── Submit ── */
+  .submit-wrap { flex: 0 0 auto; padding: 8px 16px 10px; }
+  #submitBtn {
+    width: 100%; height: 46px; background: var(--gold); border: none; border-radius: 3px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: #0C0C0E; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: opacity 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent;
+  }
+  #submitBtn:active { opacity: 0.85; transform: scale(0.98); }
+  #submitBtn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+  .status-msg {
+    text-align: center; font-size: 11px; color: var(--muted);
+    margin-top: 6px; min-height: 15px; letter-spacing: 0.03em;
+  }
+  .status-msg.ok  { color: #6dbb80; }
+  .status-msg.err { color: #d97070; }
+
+  .spinner {
+    width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.25);
+    border-top-color: #0C0C0E; border-radius: 50%;
+    animation: spin 0.7s linear infinite; display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #captureCanvas { display: none; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <span class="header-icon">♟</span>
+  <span class="header-title">OpenTurk</span>
+  <span class="header-sub">Analysis</span>
+</header>
+
+<div class="viewfinder-outer">
+  <div class="viewfinder-wrap" id="vfWrap">
+    <video id="video" autoplay playsinline muted></video>
+    <img id="preview" alt="Captured board">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+    <div class="flash" id="flash"></div>
+    <div class="captured-badge" id="capturedBadge">✓ Captured</div>
+    <div class="debug-overlay" id="debugOverlay"></div>
+    <div class="cam-error" id="camError">
+      <span class="cam-error-icon">⊘</span>
+      <span>Camera unavailable.<br>Allow access and reload.</span>
+    </div>
+    <div class="zoom-controls" id="zoomControls">
+      <button class="zoom-btn" id="zoomIn" aria-label="Zoom in">+</button>
+      <div class="zoom-level" id="zoomLabel">1×</div>
+      <button class="zoom-btn" id="zoomOut" aria-label="Zoom out">−</button>
+      <button class="zoom-btn" id="focusBtn" aria-label="Lock focus" style="margin-top:6px;font-size:14px;display:none;">🔓</button>
+    </div>
+  </div>
+</div>
+
+<div class="action-row">
+  <button id="snapBtn"><span class="snap-dot">⬤</span> SNAP</button>
+</div>
+
+<div class="controls">
+  <div>
+    <div class="ctrl-label">Auto-Capture</div>
+    <div class="perspective-row">
+      <div class="persp-option" id="optAutoOn" role="button" tabindex="0" aria-pressed="false">
+        <div class="persp-piece wp">🤖</div>
+        <span class="persp-text">Auto ON</span>
+        <div class="persp-dot"></div>
+      </div>
+      <div class="persp-option active" id="optAutoOff" role="button" tabindex="0" aria-pressed="true">
+        <div class="persp-piece bp">✋</div>
+        <span class="persp-text">Auto OFF</span>
+        <div class="persp-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="ctrl-label">Search Depth</div>
+    <div class="depth-row">
+      <div>
+        <div class="depth-num" id="depthVal">22</div>
+      </div>
+      <input type="range" id="depthSlider" min="1" max="245" value="22" aria-label="Search depth">
+    </div>
+    <div class="depth-minmax">
+      <span>1 — fast</span>
+      <span>245 — strongest</span>
+    </div>
+  </div>
+</div>
+
+<div class="submit-wrap">
+  <button id="submitBtn" disabled>
+    <span id="submitLabel">Analyse Board</span>
+    <div class="spinner" id="spinner"></div>
+  </button>
+  <div class="status-msg" id="statusMsg">Capture the board first</div>
+</div>
+
+<canvas id="captureCanvas"></canvas>
+
+<script>
+  const vfWrap     = document.getElementById('vfWrap');
+  const vfOuter    = vfWrap.parentElement;
+  const header     = document.querySelector('.header');
+  const actionRow  = document.querySelector('.action-row');
+  const controls   = document.querySelector('.controls');
+  const submitWrap = document.querySelector('.submit-wrap');
+
+  function sizeViewfinder() {
+    vfWrap.style.width  = '0';
+    vfWrap.style.height = '0';
+    vfOuter.style.paddingBottom = '0';
+
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+
+    const used = header.offsetHeight
+               + actionRow.offsetHeight
+               + controls.offsetHeight
+               + submitWrap.offsetHeight
+               + 8 + 6;
+
+    const maxH = vh - used;
+    const maxW = vw - 32;
+    const size = Math.max(120, Math.min(maxW, maxH));
+
+    vfWrap.style.width  = size + 'px';
+    vfWrap.style.height = size + 'px';
+  }
+
+  sizeViewfinder();
+  window.addEventListener('resize', sizeViewfinder);
+
+  /* ── Audio Feedback ── */
+  function playBeep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch (e) {
+      console.error('Audio play error:', e);
+    }
+  }
+
+  /* ── State Variables ── */
+  let capturedBlob = null;
+  let currentZoom  = 1;
+  let minZoom      = 1;
+  let maxZoom      = 5;
+  let videoTrack   = null;
+
+  /* ── Camera initialization ── */
+  const video        = document.getElementById('video');
+  const camError     = document.getElementById('camError');
+  const zoomControls = document.getElementById('zoomControls');
+  const zoomLabel    = document.getElementById('zoomLabel');
+
+  async function startCamera() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' },
+                 width: { ideal: 4096 }, height: { ideal: 4096 },
+                 focusMode: { ideal: 'continuous' } },
+        audio: false
+      });
+      video.srcObject = stream;
+      videoTrack = stream.getVideoTracks()[0];
+
+      const caps = videoTrack.getCapabilities?.();
+      if (caps && caps.zoom) {
+        minZoom = caps.zoom.min;
+        maxZoom = caps.zoom.max;
+        currentZoom = Math.max(minZoom, 1);
+      }
+      updateZoomDisplay();
+
+      if (caps && caps.focusMode && caps.focusMode.includes('manual')) {
+        focusBtn.style.display = 'flex';
+      } else {
+        focusBtn.style.display = 'none';
+      }
+    } catch (err) {
+      camError.style.display = 'flex';
+      video.style.display    = 'none';
+      document.getElementById('snapBtn').disabled = true;
+      console.error('Camera error:', err);
+    }
+  }
+  startCamera();
+
+  async function applyZoom(val) {
+    currentZoom = +Math.min(maxZoom, Math.max(minZoom, val)).toFixed(1);
+    updateZoomDisplay();
+    const caps = videoTrack?.getCapabilities?.();
+    if (caps && caps.zoom) {
+      try {
+        await videoTrack.applyConstraints({ advanced: [{ zoom: currentZoom }] });
+        video.style.transform = '';
+        return;
+      } catch (_) {}
+    }
+    video.style.transform       = `scale(${currentZoom})`;
+    video.style.transformOrigin = 'center center';
+  }
+
+  function updateZoomDisplay() {
+    zoomLabel.textContent = currentZoom.toFixed(1) + '×';
+  }
+
+  document.getElementById('zoomIn').addEventListener('click', () => applyZoom(currentZoom + 0.5));
+  document.getElementById('zoomOut').addEventListener('click', () => applyZoom(currentZoom - 0.5));
+
+  /* ── Focus control ── */
+  const focusBtn = document.getElementById('focusBtn');
+  let focusLocked = false;
+
+  async function toggleFocusLock() {
+    if (!videoTrack) return;
+    const caps = videoTrack.getCapabilities?.();
+    if (!caps || !caps.focusMode || !caps.focusMode.includes('manual')) {
+      setStatus('Manual focus lock not supported on this device', 'err');
+      return;
+    }
+    try {
+      if (!focusLocked) {
+        const settings = videoTrack.getSettings?.() || {};
+        let dist = settings.focusDistance;
+        if (dist == null && caps.focusDistance) {
+          const { min, max } = caps.focusDistance;
+          dist = min + (max - min) * 0.15;
+        }
+        const advanced = (dist != null) ? [{ focusMode: 'manual', focusDistance: dist }] : [{ focusMode: 'manual' }];
+        await videoTrack.applyConstraints({ advanced });
+        focusLocked = true;
+        focusBtn.textContent = '🔒';
+        setStatus('Focus locked');
+      } else {
+        await videoTrack.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+        focusLocked = false;
+        focusBtn.textContent = '🔓';
+        setStatus('Focus unlocked');
+      }
+    } catch (err) {
+      console.error('Focus error:', err);
+      setStatus('Focus mode error', 'err');
+    }
+  }
+
+  focusBtn.addEventListener('click', toggleFocusLock);
+
+  /* ── Snap Logic ── */
+  const snapBtn       = document.getElementById('snapBtn');
+  const preview       = document.getElementById('preview');
+  const flash         = document.getElementById('flash');
+  const capturedBadge = document.getElementById('capturedBadge');
+  const canvas        = document.getElementById('captureCanvas');
+  const submitBtn     = document.getElementById('submitBtn');
+  const statusMsg     = document.getElementById('statusMsg');
+
+  function setStatus(msg, type = '') {
+    statusMsg.textContent = msg;
+    statusMsg.className   = 'status-msg' + (type ? ' ' + type : '');
+  }
+
+  function captureNow() {
+    if (!video.srcObject) return;
+
+    playBeep();
+
+    flash.classList.remove('go');
+    void flash.offsetWidth;
+    flash.classList.add('go');
+    setTimeout(() => flash.classList.remove('go'), 350);
+
+    const vw = video.videoWidth  || 640;
+    const vh = video.videoHeight || 640;
+    const size = Math.min(vw, vh);
+    canvas.width  = size;
+    canvas.height = size;
+    canvas.getContext('2d').drawImage(
+      video,
+      Math.floor((vw - size) / 2), Math.floor((vh - size) / 2),
+      size, size, 0, 0, size, size
+    );
+
+    canvas.toBlob(blob => {
+      capturedBlob = blob;
+
+      preview.src           = URL.createObjectURL(blob);
+      preview.style.display = 'block';
+      video.style.display   = 'none';
+
+      capturedBadge.style.display = 'block';
+      zoomControls.style.display  = 'none';
+
+      submitBtn.disabled = false;
+      
+      // Submit the captured image automatically
+      submitBtn.click();
+    }, 'image/png');
+  }
+
+  function restoreLiveView() {
+    capturedBlob = null;
+
+    preview.style.display = 'none';
+    video.style.display   = 'block';
+
+    capturedBadge.style.display = 'none';
+    zoomControls.style.display  = 'flex';
+
+    submitBtn.disabled = true;
+  }
+
+  snapBtn.addEventListener('click', () => {
+    if (autoEnabled) stopMotionLoop();
+    captureNow();
+  });
+
+  /* ── Depth ── */
+  const depthSlider = document.getElementById('depthSlider');
+  const depthVal    = document.getElementById('depthVal');
+
+  function updateSliderFill() {
+    const pct = ((depthSlider.value - 1) / 244) * 100;
+    depthSlider.style.background =
+      `linear-gradient(to right, var(--gold) ${pct}%, var(--border) ${pct}%)`;
+  }
+  depthSlider.addEventListener('input', () => {
+    depthVal.textContent = depthSlider.value;
+    updateSliderFill();
+  });
+  updateSliderFill();
+
+  /* ── Submit Event Handler ── */
+  const spinner     = document.getElementById('spinner');
+  const submitLabel = document.getElementById('submitLabel');
+
+  submitBtn.addEventListener('click', async () => {
+    if (!capturedBlob) { setStatus('No image captured', 'err'); return; }
+
+    submitBtn.disabled      = true;
+    submitLabel.textContent = 'Analysing…';
+    spinner.style.display   = 'block';
+    setStatus('Sending to engine…');
+
+    const fd = new FormData();
+    fd.append('image', capturedBlob, 'board.png');
+    fd.append('depth', depthSlider.value);
+
+    try {
+      const res = await fetch('/analyse', { method: 'POST', body: fd });
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+
+      setStatus('Image received by server', 'ok');
+      submitLabel.textContent = 'Analyse Board';
+      spinner.style.display   = 'none';
+
+      restoreLiveView();
+      if (autoEnabled) {
+        setStatus('Watching for next move…');
+        resumeMotionLoop();
+      }
+    } catch (err) {
+      setStatus('Analysis failed. Try again.', 'err');
+      console.error(err);
+      submitBtn.disabled      = false;
+      submitLabel.textContent = 'Analyse Board';
+      spinner.style.display   = 'none';
+    }
+  });
+
+  /* ── Auto-capture Motion Loop ── */
+  const MOTION_SAMPLE_MS   = 180;
+  const MOTION_THRESHOLD   = 2;
+  const MIN_MOTION_MS      = 250;
+  const SETTLE_MS          = 1300;
+  const RESUME_GRACE_MS    = 2000;
+  const SAMPLE_W = 96, SAMPLE_H = 72;
+
+  const optAutoOn    = document.getElementById('optAutoOn');
+  const optAutoOff   = document.getElementById('optAutoOff');
+  const debugOverlay = document.getElementById('debugOverlay');
+
+  const sampleCanvas = document.createElement('canvas');
+  sampleCanvas.width  = SAMPLE_W;
+  sampleCanvas.height = SAMPLE_H;
+  const sampleCtx = sampleCanvas.getContext('2d', { willReadFrequently: true });
+
+  let autoEnabled   = false;
+  let sampleTimer   = null;
+  let lastFrame     = null;
+  let ignoreUntil   = 0;
+  let moving        = false;
+  let motionStart   = 0;
+  let lastMotionAt  = 0;
+
+  function grayscaleFrame() {
+    sampleCtx.drawImage(video, 0, 0, SAMPLE_W, SAMPLE_H);
+    const { data } = sampleCtx.getImageData(0, 0, SAMPLE_W, SAMPLE_H);
+    const gray = new Uint8ClampedArray(SAMPLE_W * SAMPLE_H);
+    for (let i = 0, j = 0; i < data.length; i += 4, j++) {
+      gray[j] = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114) | 0;
+    }
+    return gray;
+  }
+
+  function frameDiff(a, b) {
+    let sum = 0;
+    for (let i = 0; i < a.length; i++) sum += Math.abs(a[i] - b[i]);
+    return sum / a.length;
+  }
+
+  function resetMotionBaseline() {
+    lastFrame = null;
+    moving = false;
+  }
+
+  function startMotionLoop() {
+    if (sampleTimer) return;
+    resetMotionBaseline();
+    sampleTimer = setInterval(sampleTick, MOTION_SAMPLE_MS);
+  }
+
+  function stopMotionLoop() {
+    if (sampleTimer) { clearInterval(sampleTimer); sampleTimer = null; }
+  }
+
+  function resumeMotionLoop() {
+    ignoreUntil = Date.now() + RESUME_GRACE_MS;
+    startMotionLoop();
+  }
+
+  function sampleTick() {
+    if (video.style.display === 'none' || !video.videoWidth) return;
+
+    const frame = grayscaleFrame();
+    if (!lastFrame) { lastFrame = frame; return; }
+    const diff = frameDiff(frame, lastFrame);
+    lastFrame = frame;
+
+    if (autoEnabled) {
+      debugOverlay.style.display = 'block';
+      debugOverlay.textContent = `diff ${diff.toFixed(1)} / thr ${MOTION_THRESHOLD} · ${moving ? 'moving' : 'still'}`;
+    } else {
+      debugOverlay.style.display = 'none';
+    }
+
+    const now = Date.now();
+    if (now < ignoreUntil) return;
+
+    if (diff >= MOTION_THRESHOLD) {
+      lastMotionAt = now;
+      if (!moving) { moving = true; motionStart = now; }
+    } else if (moving && (now - lastMotionAt) >= SETTLE_MS) {
+      moving = false;
+      const duration = lastMotionAt - motionStart;
+      if (duration >= MIN_MOTION_MS) onMotionSettled();
+    }
+  }
+
+  function onMotionSettled() {
+    stopMotionLoop();
+    captureNow();
+  }
+
+  function startAuto() {
+    if (!video.srcObject) { setStatus('Camera not ready', 'err'); return; }
+    autoEnabled = true;
+    snapBtn.style.display = 'none';
+    setStatus('Watching for move…');
+    resumeMotionLoop();
+  }
+
+  function stopAuto() {
+    autoEnabled = false;
+    stopMotionLoop();
+    debugOverlay.style.display = 'none';
+    snapBtn.style.display = 'flex';
+    setStatus('Auto-capture off');
+  }
+
+  optAutoOn.addEventListener('click', () => {
+    optAutoOn.classList.add('active');  optAutoOn.setAttribute('aria-pressed', 'true');
+    optAutoOff.classList.remove('active'); optAutoOff.setAttribute('aria-pressed', 'false');
+    startAuto();
+  });
+  optAutoOff.addEventListener('click', () => {
+    optAutoOff.classList.add('active'); optAutoOff.setAttribute('aria-pressed', 'true');
+    optAutoOn.classList.remove('active'); optAutoOn.setAttribute('aria-pressed', 'false');
+    stopAuto();
+  });
+</script>
+</body>
+</html>
