@@ -57,7 +57,7 @@ def analyse():
     )
 
     #Convert board to state dictionary
-    board = generate_state_dictionary(openai_api_key=apikey)
+    com_tokens, board = generate_state_dictionary(openai_api_key=apikey)
 
     #Translate state dictionary to FEN notation
     fen_string = board_to_fen(board)
