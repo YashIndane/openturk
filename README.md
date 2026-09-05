@@ -61,7 +61,7 @@ Disable with `sudo iw wlan0 set power_save off`.
 ## Hardware
 ```
 Dual NEMA-17 Stepper Motors
-WaveShare Raspberry Pi Stepper HAT (Full-step mode, DIP switches OFF [0])
+WaveShare Raspberry Pi Stepper HAT (1/8 stepping mode, DIP switches OFF [0])
 
 Power Supply: 24V 3A DC
 Stepper Imax ~ 1.4 Volts
