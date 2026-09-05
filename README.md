@@ -7,14 +7,17 @@ The Mechanical Turk (German: Schachtürke, lit. 'chess Turk'), also known as t
 
 ## Usage
 ```
-Starting the main app on WSL:
-    $ sudo python3 app.py --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PICKER-10.x.x.x>"
+Starting the main app on WSL/Windows:
+    $ sudo python3 app.py --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PICKER-10.x.x.x>"      [Manual Mode]
+    $ sudo python3 app_au.py --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PICKER-10.x.x.x>"   [Autonomous Mode]
 
-Network config (Powershell Admin):
-    $ netsh interface portproxy add v4tov4 listenport=5000 listenaddress=0.0.0.0 connectport=5000 connectaddress=<IPV4-OF-WSL-172.x.x.x>
-    $ New-NetFirewallRule -DisplayName "Flask Hotspot 5000" -Direction Inbound -LocalPort 5000 -Protocol TCP -Action Allow
+Network config for WSL (Powershell Admin):
+    $ netsh interface portproxy add v4tov4 listenport=<PORT> listenaddress=0.0.0.0 connectport=<PORT> connectaddress=<IPV4-OF-WSL-172.x.x.x>
+    $ New-NetFirewallRule -DisplayName "Flask Hotspot" -Direction Inbound -LocalPort <PORT> -Protocol TCP -Action Allow
 
-Starting the API on Rpi:
+    (Note: PORT is of the main App)
+
+Starting the picker API on Rpi:
     $ cd picker-api
     $ sudo python3 app.py
 ```
