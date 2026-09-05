@@ -8,16 +8,19 @@ The Mechanical Turk (German: Schachtürke, lit. 'chess Turk'), also known as t
 ## Usage
 ```
 Starting the main app on WSL/Windows:
+
     $ sudo python3 app.py --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PICKER-10.x.x.x>"      [Manual Mode]
     $ sudo python3 app_au.py --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PICKER-10.x.x.x>"   [Autonomous Mode]
 
 Network config for WSL (Powershell Admin):
+
     $ netsh interface portproxy add v4tov4 listenport=<PORT> listenaddress=0.0.0.0 connectport=<PORT> connectaddress=<IPV4-OF-WSL-172.x.x.x>
     $ New-NetFirewallRule -DisplayName "Flask Hotspot" -Direction Inbound -LocalPort <PORT> -Protocol TCP -Action Allow
 
     (Note: PORT is of the main App)
 
 Starting the picker API on Rpi:
+
     $ cd picker-api
     $ sudo python3 app.py
 ```
@@ -41,6 +44,7 @@ Rpi:
 Disable with `sudo iw wlan0 set power_save off`.
 
 3. Installing pigpio and running it's daemon:
+
     $ sudo apt update
     $ sudo apt install -y python3-setuptools python3-full git
     $ sudo wget https://github.com/joan2937/pigpio/archive/refs/tags/v79.tar.gz
@@ -65,14 +69,17 @@ Vref = 0.7 Volts
 Stepping: 1/8
 
 Wiring:
+
     Motor 1: Blue->A1, Red->A2, Black->B1, Green->B2
     Motor 2: Blue->A3, Red->A4, Black->B3, Green->B4
 
 Wiring (per user):
+
     Motor 1: STEP=GPIO19, DIR=GPIO13, EN=GPIO12  [BCM]
     Motor 2: STEP=GPIO18, DIR=GPIO24, EN=GPIO4   [BCM]
 
 Notes:
+
     - Enable pins on THIS HAT are ACTIVE HIGH (HIGH = enabled/energized)
     - DIP positions on HAT for 1/8 stepping:
         D0: 1, D1: 1, D2: 0, D3: 1, D4: 1, D5: 0
