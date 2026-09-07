@@ -3,16 +3,18 @@ OpenTurk — sample Flask app for local testing.
 (NOTE - This App is configured to play as `BLACK` Piece)
 """
 
+
 import os
 import time
-import requests
 import argparse
+import requests
 import threading
-from src.board_to_dict import generate_state_dictionary
+
 from src.dict_to_fen import board_to_fen
 from src.move_generation2 import gen_move
-import time
+from src.board_to_dict import generate_state_dictionary
 from flask import Flask, jsonify, render_template, request
+
 
 app = Flask(__name__)
 
@@ -91,11 +93,11 @@ def analyse():
     com_tokens, board_dict = generate_state_dictionary(openai_api_key=apikey)
 
     # Translate state dictionary to FEN notation
-    fen_string = board_to_fen(board_dict)
+    fen_string: str = board_to_fen(board_dict)
     print(fen_string)
 
     # Invoke StockFish for optimal move
-    engine_move = gen_move(fen_string, depth)
+    engine_move: dict = gen_move(fen_string, depth)
 
     print(f"\nMove: {engine_move['move']}",
           f"Status: {engine_move['status']}",
@@ -112,8 +114,8 @@ def analyse():
         latest_state["version"] += 1
 
     # Set move & capture flag
-    capture_flag = engine_move['capture']
-    move = engine_move['move']
+    capture_flag: bool = engine_move['capture']
+    move: str = engine_move['move']
 
     # Drive picker
     resp, status_code = callpicker()
@@ -127,7 +129,6 @@ def analyse():
     return render_template("capture_board_au8.html")
 
 
-#@app.route('/callpicker', methods=['GET'])
 def callpicker():
     try:
        cap = 'yes' if capture_flag else 'no'
