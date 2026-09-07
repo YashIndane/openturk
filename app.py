@@ -17,13 +17,16 @@ LAN will NOT get camera access.
 (NOTE - This App is configured to play as `BLACK` Piece)
 """
 
+
 import os
 import requests
 import argparse
-from src.board_to_dict import generate_state_dictionary
+
 from src.dict_to_fen import board_to_fen
 from src.move_generation2 import gen_move
+from src.board_to_dict import generate_state_dictionary
 from flask import Flask, jsonify, render_template, request
+
 
 app = Flask(__name__)
 
@@ -60,12 +63,12 @@ def analyse():
     com_tokens, board = generate_state_dictionary(openai_api_key=apikey)
 
     #Translate state dictionary to FEN notation
-    fen_string = board_to_fen(board)
+    fen_string: str = board_to_fen(board)
     
     print(fen_string)
 
     #Invoke StockFish for optimal move
-    engine_move = gen_move(fen_string, depth)
+    engine_move: dict = gen_move(fen_string, depth)
 
     print(f"\nMove: {engine_move['move']}",
           f"Status: {engine_move['status']}",
@@ -73,9 +76,11 @@ def analyse():
           sep="\n",
     )
 
-    capture_flag = engine_move['capture']
-    move = engine_move['move']
-    return render_template("board3.html", placement_dictionary=board, best_move=engine_move['move'], status=engine_move['status'])
+    capture_flag: bool = engine_move['capture']
+    move: str = engine_move['move']
+    return render_template(
+        "board3.html", placement_dictionary=board, best_move=engine_move['move'], status=engine_move['status']
+    )
 
 
 @app.route('/callpicker', methods=['GET'])
