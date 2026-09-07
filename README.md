@@ -58,6 +58,17 @@ Disable with `sudo iw wlan0 set power_save off`.
     $ sudo pigpiod
 ```
 
+## Working
+
+**System Overview & Workflow**
+
+The system operates on a dual-node architecture: a Windows host machine manages vision processing and move calculation, while a Raspberry Pi Zero 2W handles hardware control and motion execution.
+
+* **Image Acquisition & Motion Detection:** An overhead Android device running a JavaScript-based vision routine monitors the board for hand movements to detect when a player completes a turn, then transmits the captured board image to the backend host.
+* **Computer Vision & Parsing:** The Windows machine passes the image to the OpenAI API for piece recognition and converts the spatial layout into a hash map representation of the board state.
+* **Move Generation:** The system translates the hash map into Forsyth–Edwards Notation (FEN) and queries the Stockfish engine to determine the optimal countermove.
+* **Physical Execution:** The target move is transmitted to the Raspberry Pi Zero 2W, which calculates Cartesian (X-Y) coordinates and drives the gantry mechanism to execute the pick-and-place operation.
+
 ## Hardware
 ```
 Dual NEMA-17 Stepper Motors
