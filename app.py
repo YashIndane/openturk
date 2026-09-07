@@ -76,8 +76,8 @@ def analyse():
           sep="\n",
     )
 
-    capture_flag: bool = engine_move['capture']
-    move: str = engine_move['move']
+    capture_flag = engine_move['capture']
+    move = engine_move['move']
     return render_template(
         "board3.html", placement_dictionary=board, best_move=engine_move['move'], status=engine_move['status']
     )

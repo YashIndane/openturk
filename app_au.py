@@ -114,8 +114,8 @@ def analyse():
         latest_state["version"] += 1
 
     # Set move & capture flag
-    capture_flag: bool = engine_move['capture']
-    move: str = engine_move['move']
+    capture_flag = engine_move['capture']
+    move = engine_move['move']
 
     # Drive picker
     resp, status_code = callpicker()

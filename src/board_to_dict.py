@@ -207,7 +207,7 @@ def generate_state_dictionary(*, openai_api_key: str) -> tuple[int, dict]:
     client = OpenAI(api_key=openai_api_key)
     base64_image = encode_image(image_path, max_dimension=1500, crop_box=crop_box)
     response = client.chat.completions.create(
-        model="gpt-5.6-sol",
+        model="gpt-6-astra",
         messages=[
             {
                 "role": "user",
