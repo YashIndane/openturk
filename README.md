@@ -84,3 +84,5 @@ Notes:
     - DIP positions on HAT for 1/8 stepping:
         D0: 1, D1: 1, D2: 0, D3: 1, D4: 1, D5: 0
 ```
+
+<img width="612" height="522" alt="image" src="https://github.com/user-attachments/assets/7ad6f8cd-1c82-452e-99e0-4646129644fa" />
