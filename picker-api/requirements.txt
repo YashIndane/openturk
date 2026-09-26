@@ -1,3 +1,4 @@
 pigpio
 Flask
 Werkzeug
+RPi.GPIO
