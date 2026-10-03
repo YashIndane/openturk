@@ -26,6 +26,7 @@ Starting the main app on WSL:
 
 Starting the picker API on RPi:
 
+    $ sudo docker pull --platform linux/arm64/v8 yashindane/openturk-picker-api:v1
     $ sudo docker run -d --init --privileged -v /dev:/dev -p 5000:5000 --name picker_api.$(date "+%Y.%m.%d-%H.%M.%S") yashindane/openturk-picker-api:v1
 
 
@@ -39,7 +40,7 @@ Network config for WSL (Powershell Admin):
 
 ## Prerequisites
 ```
-WSL/Windows:
+WSL/Windows (Not needed, if using Docker):
 
 1. Copy the Stockfish binary to /exe/stockfish
 
@@ -55,7 +56,7 @@ Rpi:
 2. Run `iwconfig` — if `Power Management:on`, the Pi's WiFi radio may be sleeping between requests.
 Disable with `sudo iw wlan0 set power_save off`.
 
-3. Installing pigpio and running it's daemon:
+3. Installing pigpio and running it's daemon: (Not needed, if using Docker)
 
     $ sudo apt update
     $ sudo apt install -y python3-setuptools python3-full git
