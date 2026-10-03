@@ -21,9 +21,11 @@ Starting the picker API on RPi:
 Using Docker:
 
 Starting the main app on WSL:
+
     $ sudo docker run -d -p 5002:5002 --name openturk_main.$(date "+%Y.%m.%d-%H.%M.%S") yashindane/openturk-main:v1 --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PI>"
 
 Starting the picker API on RPi:
+
     $ sudo docker run -d --init --privileged -v /dev:/dev -p 5000:5000 --name picker_api.$(date "+%Y.%m.%d-%H.%M.%S") yashindane/openturk-picker-api:v1
 
 
