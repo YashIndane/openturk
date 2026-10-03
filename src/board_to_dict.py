@@ -8,32 +8,26 @@ from openai import OpenAI
 # Reads OPENAI_API_KEY from the environment -- never hardcode a real key in
 # a script file, since it can leak via sharing, version control, etc.
 
-def encode_image(image_path, max_dimension=1500, crop_box=None):
+
+def encode_image(file_bytes, max_dimension=1500, crop_box=None):
     """
-    Crop, resize, and PNG-encode the image before base64 encoding.
-    PNG is lossless -- no compression artifacts -- which preserves the
-    faint highlight/shadow lines needed to tell dark pieces apart (e.g.
-    a King's cross vs a Bishop's dot finial). Trade-off: PNG files run
-    larger than an equivalent JPEG, so this increases prompt tokens.
-    crop_box removes the border/labels around the actual 8x8 grid so every
-    pixel sent is board content -- this lets you use a lower max_dimension
-    for the same effective detail on the pieces.
-    crop_box format: (left, top, right, bottom) in pixels. Tune once for
-    your camera setup, then reuse it.
+    Accepts a Flask FileStorage object or path, reads it entirely in-memory
+    to eliminate WSL disk cache latency, and PNG-encodes it.
     """
-    with Image.open(image_path) as img:
-        img = img.convert("RGB")
+
+    with Image.open(BytesIO(file_bytes)) as img:
+        img = img.convert('RGB')
         if crop_box:
             img = img.crop(crop_box)
         img.thumbnail((max_dimension, max_dimension), Image.LANCZOS)
         buffer = BytesIO()
-        img.save(buffer, format="PNG")
-        return base64.b64encode(buffer.getvalue()).decode("utf-8")
+        img.save(buffer, format='PNG')
+        return base64.b64encode(buffer.getvalue()).decode('utf-8')
 
 
 # ---- Config ----
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-image_path = os.path.join(BASE_DIR, "uploads", "last_capture.png")
+# image_path = os.path.join(BASE_DIR, "uploads", "last_capture.png")
 
 # Crop box tuned for this camera setup: (left, top, right, bottom) in pixels.
 # Adjust once by eye so it hugs the 8x8 grid without clipping squares.
@@ -203,11 +197,12 @@ Rules:
 """
 
 
-def generate_state_dictionary(*, openai_api_key: str) -> tuple[int, dict]:
+def generate_state_dictionary(*, openai_api_key: str, file_bytes: bytes) -> tuple[int, dict]:
     client = OpenAI(api_key=openai_api_key)
-    base64_image = encode_image(image_path, max_dimension=1500, crop_box=crop_box)
+    base64_image = encode_image(file_bytes, max_dimension=1500, crop_box=crop_box)
     response = client.chat.completions.create(
         model="gpt-6-astra",
+        seed=42,    # Fixed seed forces deterministic token generation across runs
         messages=[
             {
                 "role": "user",

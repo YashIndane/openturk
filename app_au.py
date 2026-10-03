@@ -72,25 +72,26 @@ def state():
 
 @app.route("/analyse", methods=["POST"])
 def analyse():
-    global capture_flag, move
     image = request.files.get("image")
     depth = request.form.get("depth", "1")
 
     if not image:
         return jsonify({"error": "No image received"}), 400
 
-    # Save the capture so you can eyeball what the camera actually sent
-    save_path = os.path.join(UPLOAD_DIR, "last_capture.png")
-    image.save(save_path)
-    size_kb = os.path.getsize(save_path) / 1024
+    image_bytes = image.read()
 
-    print(
-        f"[analyse] got {size_kb:.1f} KB image | "
-        f"depth={depth}"
-    )
+    def save_log_backup(raw_bytes):
+        try:
+            save_path = os.path.join(UPLOAD_DIR, "last_capture.png")
+            with open(save_path, "wb") as f:
+                f.write(raw_bytes)
+        except Exception as e:
+            print(f"Background disk write log skipped: {e}")
+
+    threading.Thread(target=save_log_backup, args=(image_bytes,)).start()
 
     # Convert board to state dictionary
-    com_tokens, board_dict = generate_state_dictionary(openai_api_key=apikey)
+    com_tokens, board_dict = generate_state_dictionary(openai_api_key=apikey, file_bytes=image_bytes)
 
     # Translate state dictionary to FEN notation
     fen_string: str = board_to_fen(board_dict)
@@ -113,12 +114,8 @@ def analyse():
         latest_state["com_tokens"] = com_tokens
         latest_state["version"] += 1
 
-    # Set move & capture flag
-    capture_flag = engine_move['capture']
-    move = engine_move['move']
-
     # Drive picker
-    resp, status_code = callpicker()
+    resp, status_code = callpicker(engine_move['capture'], engine_move['move'])
 
     if status_code != 200:
         return resp, status_code  # Halt on error instead of rendering the capture page
@@ -129,7 +126,7 @@ def analyse():
     return render_template("capture_board_au8.html")
 
 
-def callpicker():
+def callpicker(capture_flag, move):
     try:
        cap = 'yes' if capture_flag else 'no'
        resp = requests.get(
