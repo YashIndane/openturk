@@ -12,22 +12,32 @@ Starting the main app on WSL/Windows:
     $ sudo python3 app.py --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PICKER-10.x.x.x>"      [Manual Mode]
     $ sudo python3 app_au.py --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PICKER-10.x.x.x>"   [Autonomous Mode]
 
+Starting the picker API on RPi:
+
+    $ cd picker-api
+    $ sudo python3 app.py
+
+
+Using Docker:
+
+Starting the main app on WSL:
+    $ sudo docker run -d -p 5002:5002 --name openturk_main.$(date "+%Y.%m.%d-%H.%M.%S") yashindane/openturk-main:v1 --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PI>"
+
+Starting the picker API on RPi:
+    $ sudo docker run -d --init --privileged -v /dev:/dev -p 5000:5000 --name picker_api.$(date "+%Y.%m.%d-%H.%M.%S") yashindane/openturk-picker-api:v1
+
+
 Network config for WSL (Powershell Admin):
 
     $ netsh interface portproxy add v4tov4 listenport=<PORT> listenaddress=0.0.0.0 connectport=<PORT> connectaddress=<IPV4-OF-WSL-172.x.x.x>
     $ New-NetFirewallRule -DisplayName "Flask Hotspot" -Direction Inbound -LocalPort <PORT> -Protocol TCP -Action Allow
 
     (Note: PORT is of the main App)
-
-Starting the picker API on Rpi:
-
-    $ cd picker-api
-    $ sudo python3 app.py
 ```
 
 ## Prerequisites
 ```
-WSL:
+WSL/Windows:
 
 1. Copy the Stockfish binary to /exe/stockfish
 
