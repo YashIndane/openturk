@@ -37,3 +37,7 @@ COPY pyproject.toml uv.lock* ./
 
 # Install dependencies
 RUN uv sync --frozen --no-install-project
+
+# Define the default interactive shell (standard for base images)
+CMD ["/bin/bash"]
+
