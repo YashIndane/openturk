@@ -1,0 +1,141 @@
+name: Build and Push Docker Images
+
+# Runs when a PR (MR) is merged into main.
+# Using pull_request "closed" + merged == true gives us the PR number directly for the image tag.
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write        # push to GitHub Container Registry
+  pull-requests: read    # needed by paths-filter to list files changed in the PR
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Detect which parts of the repo changed in the merged PR
+  # ---------------------------------------------------------------------------
+  changes:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      main_app: ${{ steps.filter.outputs.main_app }}
+      picker_api: ${{ steps.filter.outputs.picker_api }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            main_app:
+              - 'src/**'
+              - 'templates/**'
+              - 'base-dockerfiles/main_app/Dockerfile'
+              - 'Dockerfile'
+              - 'app_au.py'
+              - 'pyproject.toml'
+              - 'requirements.txt'
+              - 'uv.lock'
+            picker_api:
+              - 'picker-api/**'
+
+  # ---------------------------------------------------------------------------
+  # Main app image (root Dockerfile) -> yashindane/openturk-main
+  # ---------------------------------------------------------------------------
+  build-main:
+    needs: changes
+    if: needs.changes.outputs.main_app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            yashindane/openturk-main
+            ghcr.io/${{ github.repository_owner }}/openturk-main
+          tags: |
+            type=raw,value=${{ github.event.pull_request.number }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=main
+          cache-to: type=gha,mode=max,scope=main
+
+  # ---------------------------------------------------------------------------
+  # Picker API image (picker-api/Dockerfile, arm64) -> yashindane/openturk-picker-api
+  # Runs on Raspberry Pi Zero 2 W
+  # ---------------------------------------------------------------------------
+  build-picker-api:
+    needs: changes
+    if: needs.changes.outputs.picker_api == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # QEMU is required to build arm64 images on an amd64 runner
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            yashindane/openturk-picker-api
+            ghcr.io/${{ github.repository_owner }}/openturk-picker-api
+          tags: |
+            type=raw,value=${{ github.event.pull_request.number }}
+
+      - name: Build and push (linux/arm64/v8)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./picker-api
+          file: ./picker-api/Dockerfile
+          platforms: linux/arm64/v8
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=picker-api
+          cache-to: type=gha,mode=max,scope=picker-api
