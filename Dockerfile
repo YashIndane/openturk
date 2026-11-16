@@ -1,4 +1,4 @@
-FROM yashindane/openturk-main-base:v1
+FROM yashindane/openturk-main-base:v2
 
 MAINTAINER Yash Indane <yashindane46@gmail.com>
 
