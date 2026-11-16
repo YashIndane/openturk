@@ -6,6 +6,8 @@ WORKDIR /app
 
 COPY . .
 
+RUN uv sync --frozen
+
 EXPOSE 5000
 
-ENTRYPOINT ["/bin/sh", "-c", "/usr/local/bin/pigpiod && python3 app.py"]
+ENTRYPOINT ["/bin/sh", "-c", "/usr/local/bin/pigpiod && uv run app.py"]

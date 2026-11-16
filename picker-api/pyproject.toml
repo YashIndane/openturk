@@ -1,0 +1,16 @@
+[project]
+name = "openturk-picker-api"
+version = "0.1.0"
+description = "Physical driver API"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "pigpio",
+    "Flask",
+    "Werkzeug",
+    "RPi.GPIO",
+]
