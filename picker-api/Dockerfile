@@ -1,4 +1,4 @@
-FROM yashindane/openturk-picker-api-base:v1
+FROM yashindane/openturk-picker-api-base:v2
 
 MAINTAINER Yash Indane <yashindane46@gmail.com>
 
