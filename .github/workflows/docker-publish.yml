@@ -72,7 +72,7 @@ jobs:
         with:
           images: |
             yashindane/openturk-main
-            ghcr.io/${{ github.repository_owner }}/openturk-main
+            ghcr.io/yashindane/openturk-main
           tags: |
             type=raw,value=${{ github.event.pull_request.number }}
 
@@ -84,8 +84,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=main
-          cache-to: type=gha,mode=max,scope=main
+          cache-from: type=registry,ref=ghcr.io/yashindane/openturk-main:buildcache
+          cache-to: type=registry,ref=ghcr.io/yashindane/openturk-main:buildcache,mode=max
 
   # ---------------------------------------------------------------------------
   # Picker API image (picker-api/Dockerfile, arm64) -> yashindane/openturk-picker-api
@@ -124,7 +124,7 @@ jobs:
         with:
           images: |
             yashindane/openturk-picker-api
-            ghcr.io/${{ github.repository_owner }}/openturk-picker-api
+            ghcr.io/yashindane/openturk-picker-api
           tags: |
             type=raw,value=${{ github.event.pull_request.number }}
 
@@ -137,5 +137,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=picker-api
-          cache-to: type=gha,mode=max,scope=picker-api
+          cache-from: type=registry,ref=ghcr.io/yashindane/openturk-picker-api:buildcache
+          cache-to: type=registry,ref=ghcr.io/yashindane/openturk-picker-api:buildcache,mode=max
