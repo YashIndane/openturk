@@ -14,3 +14,4 @@ RUN mv /app/stock_tar/stockfish /app/exe/stockfish/ && \
 EXPOSE 5002
 
 ENTRYPOINT ["uv", "run", "app_au.py"]
+
