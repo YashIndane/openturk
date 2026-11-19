@@ -22,12 +22,12 @@ Using Docker:
 
 Starting the main app on WSL:
 
-    $ sudo docker run -d -p 5002:5002 --name openturk_main.$(date "+%Y.%m.%d-%H.%M.%S") yashindane/openturk-main:v1 --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PI>"
+    $ sudo docker run -d -p 5002:5002 --name openturk_main.$(date "+%Y.%m.%d-%H.%M.%S") yashindane/openturk-main:3 --apikey="<OPENAI-API-KEY>" --pickerip="<IPV4-OF-PI>"
 
 Starting the picker API on RPi:
 
-    $ sudo docker pull --platform linux/arm64/v8 yashindane/openturk-picker-api:v1
-    $ sudo docker run -d --init --privileged -v /dev:/dev -p 5000:5000 --name picker_api.$(date "+%Y.%m.%d-%H.%M.%S") yashindane/openturk-picker-api:v1
+    $ sudo docker pull --platform linux/arm64/v8 yashindane/openturk-picker-api:3
+    $ sudo docker run -d --init --privileged -v /dev:/dev -p 5000:5000 --name picker_api.$(date "+%Y.%m.%d-%H.%M.%S") yashindane/openturk-picker-api:3
 
 
 Network config for WSL (Powershell Admin):
